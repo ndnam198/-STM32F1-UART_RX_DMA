@@ -225,7 +225,15 @@ void DMA1_Channel6_IRQHandler(void)
   /* USER CODE END DMA1_Channel6_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_usart2_rx);
   /* USER CODE BEGIN DMA1_Channel6_IRQn 1 */
-
+  // for (uint8_t i = defineUART_RX_BUFFER_LENGTH; i >= 0; i--)
+  // {
+  //   /* code */
+  //   if(ucRxBuffer[i] == '\r'){
+  //     pcReceive = ucRxBuffer+i;
+  //     break;
+  //   }
+  // }
+  
   /* USER CODE END DMA1_Channel6_IRQn 1 */
 }
 

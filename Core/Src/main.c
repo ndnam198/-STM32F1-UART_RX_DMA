@@ -49,7 +49,7 @@ DMA_HandleTypeDef hdma_usart3_rx;
 /* USER CODE BEGIN PV */
 //uint8_t send_data = 32, receive_data, echo_receive_data;
 uint8_t ucGeneralString[200];
-uint8_t ucRxBuffer[defineUART_RX_BUFFER_LENGTH];
+static uint8_t ucRxBuffer[defineUART_RX_BUFFER_LENGTH];
 uint8_t ucBufferLen;
 uint8_t ucTemp;
 /* USER CODE END PV */
@@ -77,7 +77,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  pcReceive = ucRxBuffer;
+  pcPrint = ucRxBuffer;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -118,12 +119,12 @@ int main(void)
 //    send_data++;
 	  ucTemp = strlen((char*) ucRxBuffer);
 	  if(ucTemp > 100){
-		  memset(ucRxBuffer, 0, defineUART_RX_BUFFER_LENGTH);
+		  memset((char*)ucRxBuffer, 0, defineUART_RX_BUFFER_LENGTH);
 		  ucTemp = 0;
 	  }
 	  if(ucTemp > ucBufferLen){
 		  vUARTSend(huart2, (uint8_t *)"\r\nReceive a string from UART2: \r\n");
-		  vUARTSend(huart2, ucRxBuffer+ucBufferLen);
+		  vUARTSend(huart2, (uint8_t *)ucRxBuffer+ucBufferLen);
 		  vUARTSend(huart2, (uint8_t *)"\r\n\r\n");
 
 		  ucBufferLen = ucTemp;
@@ -131,13 +132,15 @@ int main(void)
 	  }
 	  else if(ucTemp < ucBufferLen){
 		  vUARTSend(huart2, (uint8_t *)"\r\nReceive a string from UART2: \r\n");
-		  sprintf(ucGeneralString, "\"%s%s\"\r\n", ucRxBuffer+ucBufferLen, ucRxBuffer+ucTemp);
+		  sprintf((char *)ucGeneralString, "\"%s%s\"\r\n", ucRxBuffer+ucBufferLen, ucRxBuffer+ucTemp);
 		  ucBufferLen = ucTemp;
 		  toggleLed3;
 	  }
 
+
+
 	  vUARTSend(huart2, (uint8_t *)"*");
-	  toggleLed1;
+	  toggleLed2;
 	  HAL_Delay(200);
     /* USER CODE BEGIN 3 */
   }
@@ -332,8 +335,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
   * @param  htim : TIM handle
   * @retval None
   */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+
   /* USER CODE BEGIN Callback 0 */
 
   /* USER CODE END Callback 0 */
