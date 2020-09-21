@@ -42,7 +42,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+extern volatile 	uint16_t NumberOfBytesReceive;
+extern volatile 	uint8_t UART_Buffer[UART_RX_BUFFER_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -56,10 +57,6 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern DMA_HandleTypeDef hdma_usart2_rx;
-extern DMA_HandleTypeDef hdma_usart3_rx;
-extern UART_HandleTypeDef huart2;
-extern UART_HandleTypeDef huart3;
 extern TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN EV */
@@ -202,20 +199,6 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles DMA1 channel3 global interrupt.
-  */
-void DMA1_Channel3_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA1_Channel3_IRQn 0 */
-
-  /* USER CODE END DMA1_Channel3_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_usart3_rx);
-  /* USER CODE BEGIN DMA1_Channel3_IRQn 1 */
-
-  /* USER CODE END DMA1_Channel3_IRQn 1 */
-}
-
-/**
   * @brief This function handles DMA1 channel6 global interrupt.
   */
 void DMA1_Channel6_IRQHandler(void)
@@ -223,18 +206,47 @@ void DMA1_Channel6_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Channel6_IRQn 0 */
 
   /* USER CODE END DMA1_Channel6_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_usart2_rx);
-  /* USER CODE BEGIN DMA1_Channel6_IRQn 1 */
-  // for (uint8_t i = defineUART_RX_BUFFER_LENGTH; i >= 0; i--)
-  // {
-  //   /* code */
-  //   if(ucRxBuffer[i] == '\r'){
-  //     pcReceive = ucRxBuffer+i;
-  //     break;
-  //   }
-  // }
+
+	if(LL_DMA_IsActiveFlag_TC6(DMA1))
+	{
+		LL_DMA_ClearFlag_TC6(DMA1);
+
+		NumberOfBytesReceive = UART_RX_BUFFER_SIZE - DMA1_Channel6->CNDTR;
+
+		/* Start Tranfer Data To USART TX register */
+		if(NumberOfBytesReceive)
+		{
+			LL_DMA_SetDataLength(DMA1,LL_DMA_CHANNEL_7, NumberOfBytesReceive);
+			LL_DMA_EnableChannel(DMA1,LL_DMA_CHANNEL_7);
+		}
+  
+		/* Clear all of flag DMA stream 2 */
+		DMA1->IFCR = DMA_IFCR_CHTIF6|DMA_IFCR_CTCIF6|DMA_IFCR_CTEIF6|DMA_IFCR_CGIF6;
+		DMA1_Channel6->CNDTR = UART_RX_BUFFER_SIZE;    	/* Set number of bytes to receive */
+
+		LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_6); 	/* Start DMA transfer */
+	}
+  
   
   /* USER CODE END DMA1_Channel6_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DMA1 channel7 global interrupt.
+  */
+void DMA1_Channel7_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Channel7_IRQn 0 */
+	if(LL_DMA_IsActiveFlag_TC7(DMA1))
+	{
+		LL_DMA_ClearFlag_TC7(DMA1);
+		LL_DMA_DisableChannel(DMA1,LL_DMA_CHANNEL_7);
+	}
+  /* USER CODE END DMA1_Channel7_IRQn 0 */
+
+  /* USER CODE BEGIN DMA1_Channel7_IRQn 1 */
+
+  /* USER CODE END DMA1_Channel7_IRQn 1 */
 }
 
 /**
@@ -273,26 +285,15 @@ void TIM4_IRQHandler(void)
 void USART2_IRQHandler(void)
 {
   /* USER CODE BEGIN USART2_IRQn 0 */
-
+  	if(LL_USART_IsActiveFlag_IDLE(2))
+	{
+		LL_USART_ClearFlag_IDLE(USART2);
+		LL_DMA_DisableChannel(DMA1,LL_DMA_CHANNEL_6);
+	}
   /* USER CODE END USART2_IRQn 0 */
-  HAL_UART_IRQHandler(&huart2);
   /* USER CODE BEGIN USART2_IRQn 1 */
 
   /* USER CODE END USART2_IRQn 1 */
-}
-
-/**
-  * @brief This function handles USART3 global interrupt.
-  */
-void USART3_IRQHandler(void)
-{
-  /* USER CODE BEGIN USART3_IRQn 0 */
-
-  /* USER CODE END USART3_IRQn 0 */
-  HAL_UART_IRQHandler(&huart3);
-  /* USER CODE BEGIN USART3_IRQn 1 */
-
-  /* USER CODE END USART3_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
