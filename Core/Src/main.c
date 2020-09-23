@@ -47,7 +47,7 @@
 volatile uint8_t UART_Buffer[UART_RX_BUFFER_SIZE];
 volatile uint16_t NumberOfBytesReceive = 0;
 static uint32_t xErrorCount = 0;
-
+static volatile char aPos[5];
 
 /* USER CODE END PV */
 
@@ -322,6 +322,10 @@ void vUSART_Check(void){
 
     /* Calculate current position in buffer */
     pos = UART_RX_BUFFER_SIZE - LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_6);
+    endln;
+	sprintf((char*)aPos, "%d", pos);
+    vUARTSend(USART2, (uint8_t*)aPos);
+    endln;
     if (pos != old_pos) {                       /* Check change in received data */
         if (pos > old_pos) {                    /* Current position is over previous one */
             /* We are in "linear" mode */
