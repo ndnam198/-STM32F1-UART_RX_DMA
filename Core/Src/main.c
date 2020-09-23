@@ -46,7 +46,6 @@
 /* Buffer that store USART data via DMA */
 
 volatile uint8_t UART_Buffer[UART_RX_BUFFER_SIZE];
-volatile uint16_t NumberOfBytesReceive = 0;
 
 uint8_t ucUserString[UART_RX_BUFFER_SIZE];
 /* Total Error during init procedure */
@@ -198,7 +197,7 @@ static void MX_USART2_UART_Init(void)
 	LL_DMA_InitTypeDef DMA_RX_Handle = {0};
 	/* USER CODE END USART2_Init 0 */
 	LL_USART_InitTypeDef USART_InitStruct = {0};
-	LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+	LL_GPIO_InitTypeDef  GPIO_InitStruct  = {0};
 
 	/* Peripheral clock enable */
 	LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART2);
@@ -210,11 +209,11 @@ static void MX_USART2_UART_Init(void)
 	 PA2   ------> USART2_TX
 	 PA3   ------> USART2_RX
 	 */
-	GPIO_InitStruct.Pin = LL_GPIO_PIN_2;
-	GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-	GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
+	GPIO_InitStruct.Pin        = LL_GPIO_PIN_2;
+	GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
+	GPIO_InitStruct.Speed      = LL_GPIO_SP EED_FREQ_HIGH;
 	GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-	xStatus = LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	xStatus                    = LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 	if (xStatus != SUCCESS)
 		xErrorCount++;
 
@@ -226,17 +225,17 @@ static void MX_USART2_UART_Init(void)
 	/* Configure DMA for USART RX */
 
 	LL_DMA_StructInit(&DMA_RX_Handle);
-	DMA_RX_Handle.MemoryOrM2MDstAddress = (uint32_t)UART_Buffer;
-	DMA_RX_Handle.PeriphOrM2MSrcAddress = (uint32_t)&USART2->DR;
-	DMA_RX_Handle.NbData = UART_RX_BUFFER_SIZE;
-	DMA_RX_Handle.Priority = LL_DMA_PRIORITY_VERYHIGH;
-	DMA_RX_Handle.Direction = LL_DMA_DIRECTION_PERIPH_TO_MEMORY;
-	DMA_RX_Handle.Mode = LL_DMA_MODE_CIRCULAR;
-	DMA_RX_Handle.MemoryOrM2MDstIncMode = LL_DMA_MEMORY_INCREMENT;
-	DMA_RX_Handle.PeriphOrM2MSrcIncMode = LL_DMA_PERIPH_NOINCREMENT;
+	DMA_RX_Handle.MemoryOrM2MDstAddress  = (uint32_t)UART_Buffer;
+	DMA_RX_Handle.PeriphOrM2MSrcAddress  = (uint32_t)&USART2->DR;
+	DMA_RX_Handle.NbData                 = UART_RX_BUFFER_SIZE;
+	DMA_RX_Handle.Priority               = LL_DMA_PRIORITY_VERYHIGH;
+	DMA_RX_Handle.Direction              = LL_DMA_DIRECTION_PERIPH_TO_MEMORY;
+	DMA_RX_Handle.Mode                   = LL_DMA_MODE_CIRCULAR;
+	DMA_RX_Handle.MemoryOrM2MDstIncMode  = LL_DMA_MEMORY_INCREMENT;
+	DMA_RX_Handle.PeriphOrM2MSrcIncMode  = LL_DMA_PERIPH_NOINCREMENT;
 	DMA_RX_Handle.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
 	DMA_RX_Handle.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
-	xStatus = LL_DMA_Init(DMA1, LL_DMA_CHANNEL_6, &DMA_RX_Handle);
+	xStatus                              = LL_DMA_Init(DMA1, LL_DMA_CHANNEL_6, &DMA_RX_Handle);
 	if (xStatus != SUCCESS)
 		xErrorCount++;
 
@@ -249,34 +248,15 @@ static void MX_USART2_UART_Init(void)
 	HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 
-	/* Configure DMA for USART TX */
-	// LL_DMA_StructInit(&DMA_TX_Handle);
-	// DMA_TX_Handle.MemoryOrM2MDstAddress  = (uint32_t)UART_Buffer;
-	// DMA_TX_Handle.PeriphOrM2MSrcAddress  = (uint32_t)&USART2->DR;
-	// DMA_TX_Handle.NbData                 = UART_RX_BUFFER_SIZE;
-	// DMA_TX_Handle.Priority               = LL_DMA_PRIORITY_VERYHIGH;
-	// DMA_TX_Handle.Direction              = LL_DMA_DIRECTION_MEMORY_TO_PERIPH;
-	// DMA_TX_Handle.Mode                   = LL_DMA_MODE_NORMAL;
-	// DMA_TX_Handle.MemoryOrM2MDstIncMode  = LL_DMA_MEMORY_INCREMENT;
-	// DMA_TX_Handle.PeriphOrM2MSrcIncMode  = LL_DMA_PERIPH_NOINCREMENT;
-	// DMA_TX_Handle.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
-	// DMA_TX_Handle.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
-	/* Enable DMA1 Channel7 Tranmission Complete Interrupt */
-	// LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_7);
-	// xStatus = LL_DMA_Init(DMA1, LL_DMA_CHANNEL_7, &DMA_TX_Handle);
-	// if(xStatus != SUCCESS) xErrorCount++;
-	/* DMA1_Channel7_IRQn interrupt configuration */
-	// HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 2, 0);
-	// HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
 	/* USER CODE BEGIN USART2_Init 1 */
-	USART_InitStruct.BaudRate = 115200;
-	USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
-	USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
-	USART_InitStruct.Parity = LL_USART_PARITY_NONE;
-	USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
+	USART_InitStruct.BaudRate            = 115200;
+	USART_InitStruct.DataWidth           = LL_USART_DATAWIDTH_8B;
+	USART_InitStruct.StopBits            = LL_USART_STOPBITS_1;
+	USART_InitStruct.Parity              = LL_USART_PARITY_NONE;
+	USART_InitStruct.TransferDirection   = LL_USART_DIRECTION_TX_RX;
 	USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
-	USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
-	xStatus = LL_USART_Init(USART2, &USART_InitStruct);
+	USART_InitStruct.OverSampling        = LL_USART_OVERSAMPLING_16;
+	xStatus                              = LL_USART_Init(USART2, &USART_InitStruct);
 	if (xStatus != SUCCESS)
 		xErrorCount++;
 
@@ -318,22 +298,22 @@ static void MX_GPIO_Init(void)
 	HAL_GPIO_WritePin(GPIOB, USER_LED_1_Pin | USER_LED_4_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pins : BT_UP_Pin BT_CENTER_Pin BT_DOWN_Pin */
-	GPIO_InitStruct.Pin = BT_UP_Pin | BT_CENTER_Pin | BT_DOWN_Pin;
+	GPIO_InitStruct.Pin  = BT_UP_Pin | BT_CENTER_Pin | BT_DOWN_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : USER_LED_3_Pin USER_LED_2_Pin */
-	GPIO_InitStruct.Pin = USER_LED_3_Pin | USER_LED_2_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Pin   = USER_LED_3_Pin | USER_LED_2_Pin;
+	GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull  = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : USER_LED_1_Pin USER_LED_4_Pin */
-	GPIO_InitStruct.Pin = USER_LED_1_Pin | USER_LED_4_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Pin   = USER_LED_1_Pin | USER_LED_4_Pin;
+	GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull  = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
@@ -382,8 +362,9 @@ void vUSART_ProcessData(uint8_t *data, size_t len)
 }
 
 /**
- * @brief Get string from user into a buffer 
+ * @brief Parse user string into a buffer
  * 
+ * @return uint8_t 1 if receive a new string, else return 0
  */
 uint8_t ucParseUserString(void)
 {
@@ -396,9 +377,11 @@ uint8_t ucParseUserString(void)
 		isNewString = 1;
 		memset(ucUserString, 0, UART_RX_BUFFER_SIZE);
 		if (pos > old_pos)
-		{ /* Current position is over previous one */
+		{ 
+			/* Current position is over previous one */
 			/* We are in "linear" mode */
 			/* Process data directly by subtracting "pointers" */
+
 			// print("User string (pos > old_pos): ");
 			// vUSART_ProcessData((uint8_t *)(UART_Buffer + old_pos),
 			// 				   pos - old_pos);
@@ -445,10 +428,9 @@ uint8_t ucParseUserString(void)
 }
 
 /**
- * @brief Compare user string with predefined string 
+ * @brief Compare user string to proceed a command if equal
  * 
  * @param str 
- * @return int8_t value: 1 if src > des, 0 if src == des, -1 if src < des
  */
 void vCompareString(uint8_t *str)
 {
@@ -464,7 +446,6 @@ void vCompareString(uint8_t *str)
 	}
 	if (IsString(str, "led2 1\r"))
 	{
-
 		onLed2;
 		return;
 	}
@@ -485,6 +466,7 @@ void vCompareString(uint8_t *str)
 	}
 	if (IsString(str, "help\r"))
 	{
+		endln;
 		print("---------HELP MENU---------\r\n");
 		print("leds <state>: control state of all leds\r\n");
 		print("led<x> <state>: control state of led x\r\n");
