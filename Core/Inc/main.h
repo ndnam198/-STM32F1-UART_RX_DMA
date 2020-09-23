@@ -90,6 +90,10 @@ void Error_Handler(void);
 #define USER_LED_4_Pin GPIO_PIN_8
 #define USER_LED_4_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
+#define USER_DEBUG
+#define REALITY
+#define defineDELAY_LED             200UL
+#define defineDELAY_USART_MENU      100UL
 
 /* USER CODE END Private defines */
 
