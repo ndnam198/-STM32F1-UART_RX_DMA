@@ -60,7 +60,8 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-#define UART_RX_BUFFER_SIZE			1000
+#define UART_RX_BUFFER_SIZE			100UL
+
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

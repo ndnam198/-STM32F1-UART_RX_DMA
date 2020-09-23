@@ -43,6 +43,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+volatile uint8_t UART_Buffer[UART_RX_BUFFER_SIZE];
+volatile uint16_t NumberOfBytesReceive = 0;
 static uint32_t xErrorCount = 0;
 
 
@@ -50,12 +53,11 @@ static uint32_t xErrorCount = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
+static void MX_GPIO_Init(void); 
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
-volatile uint8_t UART_Buffer[UART_RX_BUFFER_SIZE];
-volatile uint16_t NumberOfBytesReceive = 0;
+void vUSART_Check(void);
+void vUSART_ProcessData(uint8_t* data, size_t len);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -129,24 +131,23 @@ void SystemClock_Config(void)
 	 * in the RCC_OscInitTypeDef structure.
 	 */
 	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+	RCC_OscInitStruct.HSEState       = RCC_HSE_ON;
 	RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
-	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+	RCC_OscInitStruct.HSIState       = RCC_HSI_ON;
+	RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
+	RCC_OscInitStruct.PLL.PLLMUL     = RCC_PLL_MUL9;
 	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
 	{
 		Error_Handler();
 	}
 	/** Initializes the CPU, AHB and APB buses clocks
 	 */
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.ClockType      = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+	RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
+	RCC_ClkInitStruct.AHBCLKDivider  = RCC_SYSCLK_DIV1;
 	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
 	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-
 	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
 	{
 		Error_Handler();
@@ -162,20 +163,19 @@ static void MX_USART2_UART_Init(void)
 {
 	uint32_t xStatus = 0;
 	/* USER CODE BEGIN USART2_Init 0 */
-	LL_DMA_InitTypeDef DMA_TX_Handle = {0};
+	// LL_DMA_InitTypeDef DMA_TX_Handle = {0};
 	LL_DMA_InitTypeDef DMA_RX_Handle = {0};
 	/* USER CODE END USART2_Init 0 */
 	LL_USART_InitTypeDef USART_InitStruct = {0};
 	LL_GPIO_InitTypeDef  GPIO_InitStruct  = {0};
 
-	HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
 
 	/* Peripheral clock enable */
 	LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART2);
 	LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOA);
-	/* DMA1 clock enable */
 	LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
 
+	HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
 	/**USART2 GPIO Configuration
 	 PA2   ------> USART2_TX
 	 PA3   ------> USART2_RX
@@ -198,49 +198,49 @@ static void MX_USART2_UART_Init(void)
 	LL_DMA_StructInit(&DMA_RX_Handle);
 	DMA_RX_Handle.MemoryOrM2MDstAddress  = (uint32_t)UART_Buffer;
 	DMA_RX_Handle.PeriphOrM2MSrcAddress  = (uint32_t)&USART2->DR;
-	DMA_RX_Handle.NbData                 = (uint32_t)UART_RX_BUFFER_SIZE;
-	DMA_RX_Handle.Priority               = (uint32_t)LL_DMA_PRIORITY_VERYHIGH;
-	DMA_RX_Handle.Direction              = (uint32_t)LL_DMA_DIRECTION_PERIPH_TO_MEMORY;
-	DMA_RX_Handle.Mode                   = (uint32_t)LL_DMA_MODE_CIRCULAR;
-	DMA_RX_Handle.MemoryOrM2MDstIncMode  = (uint32_t)LL_DMA_MEMORY_INCREMENT;
-	DMA_RX_Handle.PeriphOrM2MSrcIncMode  = (uint32_t)LL_DMA_PERIPH_NOINCREMENT;
-	DMA_RX_Handle.PeriphOrM2MSrcDataSize = (uint32_t)LL_DMA_PDATAALIGN_BYTE;
-	DMA_RX_Handle.MemoryOrM2MDstDataSize = (uint32_t)LL_DMA_MDATAALIGN_BYTE;
-
-	/* Enable DMA1 Channel6 Tranmission Complete Interrupt DMA_CCR_TCIE*/
-	LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_6);
-
+	DMA_RX_Handle.NbData                 = UART_RX_BUFFER_SIZE;
+	DMA_RX_Handle.Priority               = LL_DMA_PRIORITY_VERYHIGH;
+	DMA_RX_Handle.Direction              = LL_DMA_DIRECTION_PERIPH_TO_MEMORY;
+	DMA_RX_Handle.Mode                   = LL_DMA_MODE_CIRCULAR;
+	DMA_RX_Handle.MemoryOrM2MDstIncMode  = LL_DMA_MEMORY_INCREMENT;
+	DMA_RX_Handle.PeriphOrM2MSrcIncMode  = LL_DMA_PERIPH_NOINCREMENT;
+	DMA_RX_Handle.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
+	DMA_RX_Handle.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
 	xStatus = LL_DMA_Init(DMA1, LL_DMA_CHANNEL_6, &DMA_RX_Handle);
 	if(xStatus != SUCCESS) xErrorCount++;
 	
+	/* Enable DMA1 Channel6 Tranmission Complete Interrupt DMA_CCR_TCIE & DMA_CCR_HTIE*/
+	/* Enable HT & TC interrupts */
+    LL_DMA_EnableIT_HT(DMA1, LL_DMA_CHANNEL_6);
+	LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_6);
 
 	/* DMA1_Channel6_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 2, 0);
+	HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 
 	/* Configure DMA for USART TX */
-	LL_DMA_StructInit(&DMA_TX_Handle);
+	// LL_DMA_StructInit(&DMA_TX_Handle);
 
-	DMA_TX_Handle.MemoryOrM2MDstAddress  = (uint32_t)UART_Buffer;
-	DMA_TX_Handle.PeriphOrM2MSrcAddress  = (uint32_t)&USART2->DR;
-	DMA_TX_Handle.NbData                 = (uint32_t)UART_RX_BUFFER_SIZE;
-	DMA_TX_Handle.Priority               = (uint32_t)LL_DMA_PRIORITY_VERYHIGH;
-	DMA_TX_Handle.Direction              = (uint32_t)LL_DMA_DIRECTION_MEMORY_TO_PERIPH;
-	DMA_TX_Handle.Mode                   = (uint32_t)LL_DMA_MODE_NORMAL;
-	DMA_TX_Handle.MemoryOrM2MDstIncMode  = (uint32_t)LL_DMA_MEMORY_INCREMENT;
-	DMA_TX_Handle.PeriphOrM2MSrcIncMode  = (uint32_t)LL_DMA_PERIPH_NOINCREMENT;
-	DMA_TX_Handle.PeriphOrM2MSrcDataSize = (uint32_t)LL_DMA_PDATAALIGN_BYTE;
-	DMA_TX_Handle.MemoryOrM2MDstDataSize = (uint32_t)LL_DMA_MDATAALIGN_BYTE;
+	// DMA_TX_Handle.MemoryOrM2MDstAddress  = (uint32_t)UART_Buffer;
+	// DMA_TX_Handle.PeriphOrM2MSrcAddress  = (uint32_t)&USART2->DR;
+	// DMA_TX_Handle.NbData                 = UART_RX_BUFFER_SIZE;
+	// DMA_TX_Handle.Priority               = LL_DMA_PRIORITY_VERYHIGH;
+	// DMA_TX_Handle.Direction              = LL_DMA_DIRECTION_MEMORY_TO_PERIPH;
+	// DMA_TX_Handle.Mode                   = LL_DMA_MODE_NORMAL;
+	// DMA_TX_Handle.MemoryOrM2MDstIncMode  = LL_DMA_MEMORY_INCREMENT;
+	// DMA_TX_Handle.PeriphOrM2MSrcIncMode  = LL_DMA_PERIPH_NOINCREMENT;
+	// DMA_TX_Handle.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
+	// DMA_TX_Handle.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
 
 	/* Enable DMA1 Channel7 Tranmission Complete Interrupt */
-	LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_7);
+	// LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_7);
 
-	xStatus = LL_DMA_Init(DMA1, LL_DMA_CHANNEL_7, &DMA_TX_Handle);
-	if(xStatus != SUCCESS) xErrorCount++;
+	// xStatus = LL_DMA_Init(DMA1, LL_DMA_CHANNEL_7, &DMA_TX_Handle);
+	// if(xStatus != SUCCESS) xErrorCount++;
 
 	/* DMA1_Channel7_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 2, 0);
-	HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
+	// HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 2, 0);
+	// HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
 
 	/* USER CODE BEGIN USART2_Init 1 */
 	USART_InitStruct.BaudRate            = 115200;
@@ -254,27 +254,18 @@ static void MX_USART2_UART_Init(void)
 	if(xStatus != SUCCESS) xErrorCount++;
 
 	LL_USART_ConfigAsyncMode(USART2);
-
-	/* Enable IDLE Interrupt USART_CR1_IDLEIE*/
-	LL_USART_EnableIT_IDLE(USART2);
-
 	/* Enable RX DMA Request USART_CR3_DMAR*/
 	LL_USART_EnableDMAReq_RX(USART2);
-
-	/* Enable TX DMA Request USART_CR3_DMAT*/
-	LL_USART_EnableDMAReq_TX(USART2);
-
+	/* Enable IDLE Interrupt USART_CR1_IDLEIE*/
+	LL_USART_EnableIT_IDLE(USART2);
+	// /* Enable TX DMA Request USART_CR3_DMAT*/
+	// LL_USART_EnableDMAReq_TX(USART2);
 	/* USART2 interrupt Init */
-	HAL_NVIC_SetPriority(USART2_IRQn,  1, 0);
+	HAL_NVIC_SetPriority(USART2_IRQn,  0, 0);
 	HAL_NVIC_EnableIRQ(USART2_IRQn);
-
-	LL_USART_ClearFlag_IDLE(USART2);
-	LL_USART_ClearFlag_RXNE(USART2);
-	LL_USART_ClearFlag_TC(USART2);
 
 	/* Set bit USART_CR1_UE */
 	LL_USART_Enable(USART2);
-
 	/* Enable DMA USART RX Stream DMA_CCR_EN*/
 	LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_6);
 }
@@ -325,6 +316,63 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void vUSART_Check(void){
+	static size_t old_pos;
+    size_t pos;
+
+    /* Calculate current position in buffer */
+    pos = UART_RX_BUFFER_SIZE - LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_6);
+    if (pos != old_pos) {                       /* Check change in received data */
+        if (pos > old_pos) {                    /* Current position is over previous one */
+            /* We are in "linear" mode */
+            /* Process data directly by subtracting "pointers" */
+            vUSART_ProcessData((uint8_t *)(UART_Buffer + old_pos), pos - old_pos);
+        } else {
+            /* We are in "overflow" mode */
+            /* First process data to the end of buffer */
+            vUSART_ProcessData((uint8_t *)(UART_Buffer + old_pos), UART_RX_BUFFER_SIZE - old_pos);
+            /* Check and continue with beginning of buffer */
+            if (pos > 0) {
+                vUSART_ProcessData((uint8_t *)(UART_Buffer + 0), pos);
+            }
+        }
+    }
+    old_pos = pos;                              /* Save current position as old */
+
+    /* Check and manually update if we reached end of buffer */
+    if (old_pos == UART_RX_BUFFER_SIZE) {
+        old_pos = 0;
+    }
+}
+
+/**
+ * \brief           Process received data over UART
+ * \note            Either process them directly or copy to other bigger buffer
+ * \param[in]       data: Data to process
+ * \param[in]       len: Length in units of bytes
+ */
+void vUSART_ProcessData(uint8_t* data, size_t len) {
+    const uint8_t* d = data;
+	uint32_t ulBlockTime = 1000;
+    /*
+     * This function is called on DMA TC and HT events, as well as on UART IDLE (if enabled) line event.
+     * 
+     * For the sake of this example, function does a loop-back data over UART in polling mode.
+     * Check ringbuff RX-based example for implementation with TX & RX DMA transfer.
+     */
+	toggleLed1;
+    for (; len > 0; --len, ++d) {
+        LL_USART_TransmitData8(USART2, (uint8_t)*d);
+    	while (!LL_USART_IsActiveFlag_TC(USART2)) {
+			if ((ulBlockTime--) == 0)
+				break;
+		}
+    }
+	LL_USART_TransmitData8(USART2, (uint8_t)13);
+	LL_USART_TransmitData8(USART2, (uint8_t)10);
+}
+
+
 /* USER CODE END 4 */
 
 /**
