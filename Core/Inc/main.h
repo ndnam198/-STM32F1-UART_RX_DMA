@@ -60,7 +60,7 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-#define UART_RX_BUFFER_SIZE			100UL
+#define USART_DMA_RX_BUFFER_SIZE			100UL
 
 /* USER CODE END EM */
 
@@ -90,10 +90,8 @@ void Error_Handler(void);
 #define USER_LED_4_Pin GPIO_PIN_8
 #define USER_LED_4_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-#define USER_DEBUG
-#define REALITY
-#define defineDELAY_LED             200UL
-#define defineDELAY_USART_MENU      100UL
+#define LED_CHECK_HALT_DELAY             1000UL
+#define USART_MENU_DELAY      100UL
 
 /* USER CODE END Private defines */
 

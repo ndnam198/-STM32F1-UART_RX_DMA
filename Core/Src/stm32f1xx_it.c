@@ -43,15 +43,14 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 extern volatile uint16_t NumberOfBytesReceive;
-extern volatile uint8_t UART_Buffer[UART_RX_BUFFER_SIZE];
+extern volatile uint8_t usart_dma_rx_buffer[USART_DMA_RX_BUFFER_SIZE];
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
 
-extern void vUSART_Check(void);
-extern void vUSART_ProcessData(uint8_t *data, size_t len);
+extern void DMAPostUpdate(void);
 
 /* USER CODE END PFP */
 
@@ -208,19 +207,22 @@ void SysTick_Handler(void)
 void DMA1_Channel6_IRQHandler(void)
 {
 	/* USER CODE BEGIN DMA1_Channel6_IRQn 0 */
+	/* LL_DMA_CHANNEL_6 RX */
+
+	/* Half-transfer complete */
 	if (LL_DMA_IsEnabledIT_HT(DMA1, LL_DMA_CHANNEL_6) && LL_DMA_IsActiveFlag_HT6(DMA1))
 	{
 		LL_DMA_ClearFlag_HT6(DMA1); /* Clear half-transfer complete flag */
-		print("-------HT-------\r\n");
-		vUSART_Check(); /* Check for data to process */
+		PRINTF("-------Half-Transfer IT-------\r\n");
+		DMAPostUpdate(); /* Check for data to process */
 	}
 
-	/* Check transfer-complete interrupt */
+	/* Check Full-transfer-complete interrupt */
 	if (LL_DMA_IsEnabledIT_TC(DMA1, LL_DMA_CHANNEL_6) && LL_DMA_IsActiveFlag_TC6(DMA1))
 	{
-		LL_DMA_ClearFlag_TC6(DMA1);  /* Clear transfer complete flag */
-		print("-------TC-------\r\n");
-		vUSART_Check();  /* Check for data to process */
+		LL_DMA_ClearFlag_TC6(DMA1); /* Clear transfer complete flag */
+		PRINTF("-------Full-Transfer IT-------\r\n");
+		DMAPostUpdate(); /* Check for data to process */
 	}
 
 	/* USER CODE END DMA1_Channel6_IRQn 1 */
@@ -232,6 +234,7 @@ void DMA1_Channel6_IRQHandler(void)
 void DMA1_Channel7_IRQHandler(void)
 {
 	/* USER CODE BEGIN DMA1_Channel7_IRQn 0 */
+	/*  LL_DMA_CHANNEL_6 TX */
 	if (LL_DMA_IsActiveFlag_TC7(DMA1))
 	{
 		// LL_DMA_ClearFlag_TC7(DMA1);
@@ -278,8 +281,8 @@ void USART2_IRQHandler(void)
 	if (LL_USART_IsEnabledIT_IDLE(USART2) && LL_USART_IsActiveFlag_IDLE(USART2))
 	{
 		LL_USART_ClearFlag_IDLE(USART2); /* Clear IDLE line flag */
-		print("-------IDLE-------\r\n");
-		vUSART_Check(); /* Check for data to process */
+		PRINTF("-------IDLE-Line detected-------\r\n");
+		DMAPostUpdate(); /* Check for data to process */
 	}
 }
 

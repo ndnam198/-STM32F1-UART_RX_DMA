@@ -1,7 +1,7 @@
 Core/Src/myLib.o: \
- D:/Document/Software/STM32CubeIDE_workspace/myLib/myLib.c \
- D:/Document/Software/STM32CubeIDE_workspace/myLib/myLib.h \
- ../Core/Inc/main.h ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
+ D:/Document/Software/STM32CubeIDE_workspace/UART_RX_DMA/Core/Src/myLib.c \
+ ../Core/Inc/myLib.h ../Core/Inc/main.h \
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h \
@@ -34,9 +34,9 @@ Core/Src/myLib.o: \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_utils.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_pwr.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_gpio.h \
- D:/Document/Software/STM32CubeIDE_workspace/myLib/myLib.h
+ ../Core/Inc/myLib.h
 
-D:/Document/Software/STM32CubeIDE_workspace/myLib/myLib.h:
+../Core/Inc/myLib.h:
 
 ../Core/Inc/main.h:
 
@@ -106,4 +106,4 @@ D:/Document/Software/STM32CubeIDE_workspace/myLib/myLib.h:
 
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_gpio.h:
 
-D:/Document/Software/STM32CubeIDE_workspace/myLib/myLib.h:
+../Core/Inc/myLib.h:

@@ -34,12 +34,12 @@
 		<link>
 			<name>Core/Inc/myLib.h</name>
 			<type>1</type>
-			<location>D:/Document/Software/STM32CubeIDE_workspace/myLib/myLib.h</location>
+			<location>D:/Document/Software/STM32CubeIDE_workspace/UART_RX_DMA/Core/Inc/myLib.h</location>
 		</link>
 		<link>
 			<name>Core/Src/myLib.c</name>
 			<type>1</type>
-			<location>D:/Document/Software/STM32CubeIDE_workspace/myLib/myLib.c</location>
+			<location>D:/Document/Software/STM32CubeIDE_workspace/UART_RX_DMA/Core/Src/myLib.c</location>
 		</link>
 	</linkedResources>
 </projectDescription>
